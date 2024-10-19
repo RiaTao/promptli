@@ -1,25 +1,23 @@
-import ollama, { GenerateResponse, Ollama } from "ollama/browser";
+import ollama, { Ollama } from "ollama/browser";
 
 let abortController = new AbortController();
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const fetchWithSignal = (...args: Parameters<typeof fetch>) => {
+const fetchWithSignal = (...args) => {
   return fetch(args[0], {
     ...args[1],
     signal: abortController.signal,
   });
 };
 
-const generate = (
-  args: Parameters<typeof ollama.generate>[0],
-): Promise<GenerateResponse> => {
+const generate = (args) => {
   const ollama = new Ollama({
     fetch: fetchWithSignal,
   });
   return ollama.generate(args).catch((e) => {
     console.warn(e);
-    const message: string | undefined = (e as any)?.message;
+    const message = e?.message;
     if (message === "unexpected server status: llm server loading model") {
       return sleep(3000).then(() => {
         if (abortController.signal.aborted) {
