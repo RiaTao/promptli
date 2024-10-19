@@ -104,34 +104,43 @@ class GeminiProvider {
 }
 
 class OllamaProvider {
+  // Simulate checking if models are available using a dummy API
   async isSupported() {
     try {
-      const result = await chrome.runtime.sendMessage({ type: "ollama.list" });
-      if (!result) return false;
-      return result.models.length > 0;
+      const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+      const result = await response.json();
+
+      // Simulate that models are available if we receive data
+      return result.length > 0;
     } catch (e) {
       console.warn(e);
-      return false;
+      return false; // Simulate failure if there is an error
     }
   }
 
+  // Simulate sending a grammar correction request using a dummy API
   async fixGrammar(text) {
-    const prompt = `correct grammar:\n${text}\n`;
+    try {
+      const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "Grammar Check", // Mock data field to simulate sending a request
+          body: text, // Use the input text as the body
+          userId: 1, // Mock user ID
+        }),
+      });
 
-    const response = await chrome.runtime.sendMessage({
-      type: "ollama.generate",
-      data: {
-        model: "llama3.1",
-        prompt,
-        system: "correct grammar in text, don't add explanations",
-      },
-    });
+      const result = await response.json();
 
-    if (!response) {
-      throw new Error("Make sure that Ollama is installed and running.");
+      // Simulate a "corrected" result using placeholder data
+      return `Corrected text: ${result.body}`;
+    } catch (e) {
+      console.error("Error with mock API:", e);
+      throw new Error("Mock API request failed.");
     }
-
-    return response.response;
   }
 }
 
